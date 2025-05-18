@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Basic Keylogger - Keystroke Logger</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #121212;
+    color: #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    height: 100vh;
+    margin: 0;
+  }
+  h1 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #f39c12;
+    user-select: none;
+  }
+  #log-container {
+    width: 100%;
+    max-width: 600px;
+    height: 300px;
+    background: #222;
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 1rem;
+    box-shadow: 0 0 10px #f39c12aa;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  #controls {
+    margin-top: 1rem;
+  }
+  button {
+    background-color: #f39c12;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 30px;
+    color: #121212;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-weight: 700;
+  }
+  button:hover {
+    background-color: #d87c12;
+  }
+  small {
+    margin-top: 0.5rem;
+    color: #888;
+    user-select: none;
+  }
+</style>
+</head>
+<body>
+  <h1>Basic Keylogger</h1>
+  <div id="log-container" tabindex="0" aria-label="Keystroke log" role="textbox" aria-multiline="true"></div>
+  <div id="controls">
+    <button id="save-log">Save Log as HTML</button>
+  </div>
+  <small>Focus this box and start typing to record keystrokes.</small>
+
+<script>
+(() => {
+  const logContainer = document.getElementById('log-container');
+  let logContent = '';
+
+  // Focus the log container to capture keystrokes immediately on click
+  logContainer.focus();
+
+  // Map special keys to readable names
+  const specialKeysMap = {
+    ' ': '[space]',
+    'Enter': '[enter]',
+    'Backspace': '[backspace]',
+    'Tab': '[tab]',
+    'Shift': '[shift]',
+    'Control': '[ctrl]',
+    'Alt': '[alt]',
+    'Escape': '[esc]',
+    'ArrowUp': '[arrow_up]',
+    'ArrowDown': '[arrow_down]',
+    'ArrowLeft': '[arrow_left]',
+    'ArrowRight': '[arrow_right]',
+    'CapsLock': '[capslock]',
+    'Delete': '[delete]',
+    'Home': '[home]',
+    'End': '[end]',
+    'PageUp': '[page_up]',
+    'PageDown': '[page_down]',
+  };
+
+  function formatKey(key) {
+    if (specialKeysMap.hasOwnProperty(key)) {
+      return specialKeysMap[key];
+    }
+    return key.length === 1 ? key : '[' + key.toLowerCase() + ']';
+  }
+
+  // Capture keystrokes
+  logContainer.addEventListener('keydown', (e) => {
+    e.preventDefault(); 
+    const key = formatKey(e.key);
+    logContent += key;
+    logContainer.textContent = logContent;
+    // Auto scroll to bottom
+    logContainer.scrollTop = logContainer.scrollHeight;
+  });
+
+  // Save the log as an HTML file
+  document.getElementById('save-log').addEventListener('click', () => {
+    const htmlContent = `
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8" />
+<title>Keystroke Log</title>
+<style>
+  body {
+    font-family: monospace, monospace;
+    background-color: #121212;
+    color: #f39c12;
+    padding: 1rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 1.1rem;
+  }
+</style>
+</head>
+<body>
+<h1>Keystroke Log</h1>
+<pre>${logContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+</body>
+</html>`;
+
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    a.download = `keystroke-log-${timestamp}.html`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 0);
+  });
+})();
+</script>
+</body>
+</html>
+
